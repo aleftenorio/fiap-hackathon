@@ -1,0 +1,45 @@
+---
+title: "Linx - Hackathon"
+author: "Raphael Prates"
+date: "17/08/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Importando bibliotecas
+
+```{r }
+library(httr)
+library(data.table)
+library(dplyr)
+library(utils)
+library(tidyverse)
+```
+
+## Importando dados
+
+```{r}
+setwd("C:/Users/logonrmlocal/Downloads")
+load('linx_all_transactions.RData')
+```
+
+Quick Look
+
+```{r }
+glimpse(df)
+```
+
+```{r }
+summary(df)
+```
+## Número de CNPJ das lojas
+```{r }
+print(paste0("Numero de lojas por CNPJ unicos: ",length(levels(df$encrypted_cnpj))))
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+sum(is.na(df))
+```
