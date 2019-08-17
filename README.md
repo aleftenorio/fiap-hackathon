@@ -1,7 +1,7 @@
 # fiap-hackathon
-fiap-hackathon
 
 
-#Link para baixar CSV de transações
-https://fiap04ia.s3.amazonaws.com/transacoes.csv
+### [Link](https://fiap04ia.s3.amazonaws.com/transacoes.csv) para baixar o CSV de transações
 
+## Objetivos 
+-  Clusterizar por tudo que for possivel 
