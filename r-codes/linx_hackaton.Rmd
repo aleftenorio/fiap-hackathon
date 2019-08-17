@@ -17,6 +17,7 @@ library(data.table)
 library(dplyr)
 library(utils)
 library(tidyverse)
+library(stringr)
 ```
 
 ## Importando dados
@@ -26,20 +27,25 @@ setwd("C:/Users/logonrmlocal/Downloads")
 load('linx_all_transactions.RData')
 ```
 
-Quick Look
+## Quick Look
 
 ```{r }
 glimpse(df)
 ```
 
 ```{r }
-summary(df)
+df$productTotal <- as.numeric(as.character(df$productTotal))
 ```
+
+```{r }
+glimpse(df)
+```
+
 ## Número de CNPJ das lojas
 ```{r }
 print(paste0("Numero de lojas por CNPJ unicos: ",length(levels(df$encrypted_cnpj))))
 ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-sum(is.na(df))
+
 ```
