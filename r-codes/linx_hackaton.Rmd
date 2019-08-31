@@ -12,9 +12,11 @@ knitr::opts_chunk$set(echo = TRUE)
 ## Importando bibliotecas
 
 ```{r }
+library(datetime)
 library(httr)
 library(data.table)
 library(dplyr)
+library(lubridate)
 library(utils)
 library(tidyverse)
 library(stringr)
@@ -23,8 +25,7 @@ library(stringr)
 ## Importando dados
 
 ```{r}
-setwd("C:/Users/logonrmlocal/Downloads")
-load('linx_all_transactions.RData')
+load("C:/Users/duffzord/Documents/R-DEV/hackathon/fiap-hackathon/r-codes/dados_linx/linx_all_transactions.RData")
 ```
 
 ## Quick Look
@@ -35,17 +36,45 @@ glimpse(df)
 
 ```{r }
 df$productTotal <- as.numeric(as.character(df$productTotal))
+df$productTotal <- round(df$productTotal, 2)
 ```
 
 ```{r }
 glimpse(df)
 ```
 
-## Número de CNPJ das lojas
+## Numero de encrypted_domain
 ```{r }
-print(paste0("Numero de lojas por CNPJ unicos: ",length(levels(df$encrypted_cnpj))))
+df$encrypted_domain <- as.factor(df$encrypted_domain)
+print(paste0("Numero de encrypted_domain unicos: ",length(levels(df$encrypted_domain))))
 ```
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-
+unique(levels(df$encrypted_domain))
 ```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df$encrypted_domain <- str_replace(df$encrypted_domain, '3130346238346439613630366662323861653139623466366639363939393662', 'A')
+df$encrypted_domain <- str_replace(df$encrypted_domain, '3132336536623434373931646265346333343863663330323262353339366331', 'B')
+df$encrypted_domain <- str_replace(df$encrypted_domain, '6139646137356433363237396637323937336161383832316332663038646335', 'C')
+df$encrypted_domain <- as.factor(df$encrypted_domain)
+```
+
+## Criando coluna para hora do dia
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df$hour <-  as.time(as.datetime(df$dateTime, format = '%Y-%m-%dT%H'))
+df$dateTime <- date(df$dateTime)
+#df$dia.semana <- weekdays(df$dateTime)
+#df$dia.mes <- sapply(df$dateTime, day)
+```
+
+## Agrupando por varejista e soma dos itens vendidos no dia
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_group <- df %>% 
+  group_by(encrypted_domain,dateTime) %>% 
+  summarize(vendaTotal = sum(productTotal))
+```
+
+## Links Uteis para Forecasting
+https://docs.microsoft.com/pt-br/azure/machine-learning/service/how-to-auto-train-forecast
+https://medium.com/techbloghotmart/o-que-s%C3%A3o-s%C3%A9ries-temporais-e-como-aplicar-em-machine-learning-6ea5d94bec78

@@ -5,9 +5,10 @@ library(utils)
 library(tidyverse)
 
 
-setwd("C:/Users/logonrmlocal/Downloads")
+setwd("C:/Users/duffzord/Documents/R-DEV/hackathon/fiap-hackathon/r-codes/dados_linx/")
 
-curl_lines <- read_lines("url_cat_lines.txt")
+list.files('dados_linx/')
+
 df <- data.frame(
   encrypted_domain = as.character(),
   encrypted_cnpj = as.character(),
@@ -19,11 +20,12 @@ df <- data.frame(
   encrypted_buyer_cnpj = as.character(),
   stringsAsFactors = FALSE
 )
-count <- 1
 
-for (url in curl_lines) {
-  df_url <- fread(url)
-  df <- rbind(df, df_url)
+data_files <- list.files()
+
+for (file in data_files) {
+  df_interim <- fread(file)
+  df <- rbind(df, df_interim)
   print(count)
   count <- count + 1
 }
