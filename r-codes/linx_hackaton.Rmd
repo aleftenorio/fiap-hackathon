@@ -25,7 +25,7 @@ library(stringr)
 ## Importando dados
 
 ```{r}
-load("C:/Users/duffzord/Documents/R-DEV/hackathon/fiap-hackathon/r-codes/dados_linx/linx_all_transactions.RData")
+load("C:/Users/Administrator/hackton/fiap-hackathon/r-codes/dados_linx/linx_all_transactions.RData")
 ```
 
 ## Quick Look
@@ -68,12 +68,113 @@ df$dateTime <- date(df$dateTime)
 #df$dia.mes <- sapply(df$dateTime, day)
 ```
 
-## Agrupando por varejista e soma dos itens vendidos no dia
+## Agrupando por varejista de postos de combustiveis e PDV
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-df_group <- df %>% 
-  group_by(encrypted_domain,dateTime) %>% 
+df_c <- df %>% 
+  filter(encrypted_domain == 'C') %>% 
+  group_by(encrypted_cnpj, dateTime) %>% 
   summarize(vendaTotal = sum(productTotal))
 ```
+## Somando todas as vendas do PDV
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_c_sum <- df_c %>%
+  group_by(encrypted_cnpj) %>% 
+  summarize(vendaTotal = sum(vendaTotal)) %>% 
+  arrange(desc(vendaTotal))
+  
+```
+
+## Dividindo os PDVs por tres categorias de acordo com a venda total
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+summary(df_c_sum)
+grupo_ouro <- df_c_sum %>% 
+  filter(vendaTotal >= 13889.1) # Valores maiores do que o terceiro quartil
+
+  
+```
+
+## Tirando na analise os PDV menores
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_c_filtered <- df_c %>% 
+  filter(encrypted_cnpj %in% grupo_ouro$encrypted_cnpj | 
+           encrypted_cnpj %in% grupo_prata$encrypted_cnpj)
+```
+
+## Criando coluna com a categoria de PDV "Ouro" e "Prata"
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+categoria_func <- function(x) {
+  if (x %in% grupo_ouro$encrypted_cnpj) {
+    return('Ouro')
+  }
+  if (x %in% grupo_prata$encrypted_cnpj) {
+    return('Prata')
+  }
+}
+
+df_c_filtered$Categoria <- sapply(df_c_filtered$encrypted_cnpj, categoria_func)
+```
+
+## Agrupando por Categoria
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek_ouro <- df_c_filtered %>% 
+  filter(Categoria == "Ouro")
+
+df_dayweek_prata <- df_c_filtered %>% 
+  filter(Categoria == "Prata")
+```
+
+## Removendo os outliers para o Grupo Ouro
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek_ouro <- df_dayweek_ouro %>% 
+  filter(vendaTotal  <= 463 | vendaTotal > 80)
+
+```
+
+## Removendo os outliers para o Grupo Prata
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek_ouro <- df_dayweek_ouro %>% 
+  filter(vendaTotal  <= 463 | vendaTotal > 80)
+
+```
+
+## Criando coluna para dia da semana
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek_ouro$dateTime <- date(df_dayweek_ouro$dateTime)
+df_dayweek_ouro$dia.semana <- weekdays(df_dayweek_ouro$dateTime)
+```
+
+
+## Agrupando por dia de semana
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek <- df_dayweek_ouro %>% 
+  group_by(Categoria, dia.semana) %>% 
+  summarize(venda.Media = mean(vendaTotal))
+
+df_dayweek$dia.semana <- factor(df_dayweek$dia.semana, levels = c("segunda-feira", "terça-feira", "quarta-feira", "quinta-feira", "sexta-feira", "sábado", "domingo"))
+
+df_dayweek <- df_dayweek[order(df_dayweek$dia.semana),]
+```
+
+## Vendas dos PDVs "Ouro" por dia da semana
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek %>%
+  ggplot(aes(x=dia.semana,y=venda.Media,
+             color = Categoria,
+             group = Categoria)) + 
+  geom_point() + 
+  geom_line(linetype='dotted')
+```
+
+## Vendas dos PDVs "Prata" por dia da semana
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+df_dayweek_prata %>%
+  ggplot(aes(x=dia.semana,y=venda.Media,
+             color = Categoria,
+             group = Categoria)) + 
+  geom_point() + 
+  geom_line(linetype='dotted')
+```
+
 
 ## Links Uteis para Forecasting
 https://docs.microsoft.com/pt-br/azure/machine-learning/service/how-to-auto-train-forecast
