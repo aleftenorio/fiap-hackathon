@@ -5,7 +5,7 @@ library(utils)
 library(tidyverse)
 
 
-setwd("C:/Users/duffzord/Documents/R-DEV/hackathon/fiap-hackathon/r-codes/dados_linx/")
+#setwd("C:/Users/duffzord/Documents/R-DEV/hackathon/fiap-hackathon/r-codes/dados_linx/")
 
 list.files('dados_linx/')
 
